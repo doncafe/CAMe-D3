@@ -18,13 +18,13 @@ def extract_swdown_timeseries(wrf_dir, lon_bounds=[-99.26, -98.88], lat_bounds=[
     tuple: (DataFrame with hourly data, DataFrame with daily maximum values)
     """
     wrf_files = sorted(glob.glob(os.path.join(wrf_dir, "wrfout_d02_*.nc")))
-    print(f"Found {len(wrf_files)} WRF output files")
+    print(f"Existen {len(wrf_files)} archivos de salidas de WRF ")
     
     all_data = []
     
     for file in wrf_files:
         try:
-            print(f"Processing file: {os.path.basename(file)}")
+            print(f"Procesando archivo: {os.path.basename(file)}")
             ds = xr.open_dataset(file)
             
             # lat/lon coord
@@ -66,7 +66,7 @@ def extract_swdown_timeseries(wrf_dir, lon_bounds=[-99.26, -98.88], lat_bounds=[
             ds.close()
             
         except Exception as e:
-            print(f"Error processing file {file}: {str(e)}")
+            print(f"Error file {file}: {str(e)}")
             continue
     
     if not all_data:
@@ -82,8 +82,10 @@ def extract_swdown_timeseries(wrf_dir, lon_bounds=[-99.26, -98.88], lat_bounds=[
     final_df['day'] = final_df['timestamp'].dt.day
     final_df['month'] = final_df['timestamp'].dt.month
     
-    # Considerar solo el mes de mayo
-    final_df = final_df[final_df['month'] == 5]
+    # Considerar solo el mes de marzo
+    final_df = final_df[final_df['month'] == 3]
+    # final_df = final_df[final_df['month'] == 4]
+    # final_df = final_df[final_df['month'] == 5]
     
     # Calcular el valor maximo diario
     daily_max = final_df.groupby('date').agg({
@@ -106,14 +108,16 @@ def plot_swdown_timeseries(df, output_prefix=''):
     # Hourly values plot for May
     fig, ax1 = plt.subplots(figsize=(26, 12))
     ax1.plot(df['timestamp'], df['SWDOWN'], 'b-', label='SWDOWN hourly')
-    ax1.set_title(f'Valores horarios de radiación de onda corta (SWDOWN) - Mayo 2022\nDominio CAMe')
+    ax1.set_title(f'Valores horarios de radiación de onda corta (SWDOWN) - Marzo 2022\nDominio CAMe')
     ax1.set_xlabel('Fecha')
     ax1.set_ylabel('SWDOWN (W/m²)')
     ax1.grid(True)
     ax1.legend()
     
     plt.tight_layout()
-    plt.savefig(f'{output_prefix}swdown_may_timeseries.png')
+    plt.savefig(f'{output_prefix}_swdown_marzo_timeseries.png')
+    # plt.savefig(f'{output_prefix}_swdown_abril_timeseries.png')
+    # plt.savefig(f'{output_prefix}_swdown_mayo_timeseries.png')
     plt.close()
     
     # Daily maximum plot for May
@@ -121,21 +125,23 @@ def plot_swdown_timeseries(df, output_prefix=''):
     
     fig, ax2 = plt.subplots(figsize=(26, 12))
     ax2.plot(daily_max.index, daily_max.values, 'r-', label='Valor maximo diario')
-    ax2.set_title(f'Valores maximo de radiación de onda corta diaria (SWDOWN) - Mayo 2022\nDominio CAMe')
+    ax2.set_title(f'Valores maximo de radiación de onda corta diaria (SWDOWN) - Marzo 2022\nDominio CAMe')
     ax2.set_xlabel('Fecha')
     ax2.set_ylabel('SWDOWN (W/m²)')
     ax2.grid(True)
     ax2.legend()
     
     plt.tight_layout()
-    plt.savefig(f'{output_prefix}swdown_may_daily_max.png')
+    plt.savefig(f'{output_prefix}_swdown_marzo_diario_max.png')
+    # plt.savefig(f'{output_prefix}_swdown_abril_daily_max.png')
+    # plt.savefig(f'{output_prefix}_swdown_mayo_daily_max.png')
     plt.close()
 
 if __name__ == "__main__":
     # Directorio de archivos WRF
-    # wrf_dir = "/LUSTRE/ID/hidromet/WRF/Salidas_WRF_marzo_2022"
+    wrf_dir = "/LUSTRE/ID/hidromet/WRF/Salidas_WRF_marzo_2022"
     # wrf_dir = "/LUSTRE/ID/hidromet/WRF/Salidas_WRF_abril_2022"
-    wrf_dir = "/LUSTRE/ID/hidromet/WRF/Salidas_WRF_mayo_2022"
+    # wrf_dir = "/LUSTRE/ID/hidromet/WRF/Salidas_WRF_mayo_2022"
     
     # Area de interes (CAMe Dominio)
     lon_bounds = [-99.26, -98.88]
@@ -147,16 +153,17 @@ if __name__ == "__main__":
     if df is not None:
         # Salva las salidas en CSV
         print("Salvar datos para CSV ...")
-        output_prefix = f"swdown_may_area_{lat_bounds[0]}-{lat_bounds[1]}N_{abs(lon_bounds[0])}-{abs(lon_bounds[1])}W_"
-        df.to_csv(f"{output_prefix}hourly.csv", index=False)
-        daily_max.to_csv(f"{output_prefix}daily_max.csv")
+        output_prefix = f"swdown_marzo_area_zmvm"
+        df.to_csv(f"{output_prefix}_horarios.csv", index=False)
+        #df_horarios.to_csv(f"{output_prefix}_horarios.csv", index=False)
+        daily_max.to_csv(f"{output_prefix}_diarios_max.csv")
         
         # Crea graficas
         print("Crea las graficas...")
         plot_swdown_timeseries(df, output_prefix)
         
         # Imprime los valores maximos diarios
-        print("\nValores maximos de SWDOWN para Mayo:")
+        print("\nValores maximos de SWDOWN para Marzo:")
         print("=" * 50)
         print(daily_max)
     else:

@@ -4,7 +4,8 @@ import numpy as np
 import glob
 import os
 from datetime import datetime
-import pytz
+from datetime import timedelta
+# import pytz
 
 def extract_swdown_timeseries(wrf_dir, lon_bounds=[-99.26, -98.88], lat_bounds=[19.3, 19.75]):
     """
@@ -48,23 +49,15 @@ def extract_swdown_timeseries(wrf_dir, lon_bounds=[-99.26, -98.88], lat_bounds=[
             file_time_str = os.path.basename(file).split('_')[2:4]
             file_time_str = '_'.join(file_time_str).replace('.nc', '')
 
-            # Parse the time in GMT
+            # GMT
             gmt_time = datetime.strptime(file_time_str, '%Y-%m-%d_%H')
-            gmt_time = pytz.timezone('GMT').localize(gmt_time)
             
-            # Convert to Mexico City time
-            mexico_tz = pytz.timezone('America/Mexico_City')
-            start_time = gmt_time.astimezone(mexico_tz)
-
-            # start_time = datetime.strptime(file_time_str, '%Y-%m-%d_%H')
-            
-            # Crea un rango de tiempos basado en la longitud de swdown
-            # n_times = len(swdown)
-            # times = pd.date_range(start=start_time, periods=n_times, freq='h')
+            # A considerar para fechas con horario DST
+            start_time = gmt_time - timedelta(hours=7)
 
             # Create time range in Mexico City time
             n_times = len(swdown)
-            times = pd.date_range(start=start_time, periods=n_times, freq='h', tz=mexico_tz)
+            times = pd.date_range(start=start_time, periods=n_times, freq='h')
             
             # Crea DataFrame
             df = pd.DataFrame({
